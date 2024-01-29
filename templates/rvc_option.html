@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>음성 변환 설정</title>
+</head>
+<body>
+
+<h1>음성 변환 설정</h1>
+
+<form id="voiceConversionForm">
+    <!-- General Options -->
+    <h2>General Options</h2>
+    <!-- SONG_INPUT -->
+    <label for="songInput">음성 파일 경로 또는 YouTube 링크:</label>
+    <input type="text" id="songInput" name="SONG_INPUT" value="/content/drive/MyDrive/FIX/original_voice/ojtube.wav" required>
+    <br>
+
+    <!-- RVC_DIRNAME -->
+    <label for="rvcDirname">저장 디렉토리 이름:</label>
+    <input type="text" id="rvcDirname" name="RVC_DIRNAME" value="Jungkook" required>
+    <br>
+
+    <!-- PITCH_CHANGE -->
+    <label for="pitchChange">음성 높낮이 변경:</label>
+    <input type="number" id="pitchChange" name="PITCH_CHANGE" value="0">
+    <br>
+
+    <!-- PITCH_CHANGE_ALL -->
+    <label for="pitchChangeAll">전체 음성 높낮이 변경:</label>
+    <input type="number" id="pitchChangeAll" name="PITCH_CHANGE_ALL" value="0">
+    <br>
+
+    <!-- Voice Conversion Options -->
+    <h2>Voice Conversion Options</h2>
+    <!-- INDEX_RATE -->
+    <label for="indexRate">Index Rate:</label>
+    <input type="number" id="indexRate" name="INDEX_RATE" value="0.75">
+    <br>
+
+    <!-- FILTER_RADIUS -->
+    <label for="filterRadius">Filter Radius:</label>
+    <input type="number" id="filterRadius" name="FILTER_RADIUS" value="3">
+    <br>
+
+    <!-- PITCH_DETECTION_ALGO -->
+    <label for="pitchDetectionAlgo">Pitch Detection Algorithm:</label>
+    <select id="pitchDetectionAlgo" name="PITCH_DETECTION_ALGO">
+        <option value="rmvpe">rmvpe</option>
+        <option value="mangio-crepe">mangio-crepe</option>
+    </select>
+    <br>
+
+    <!-- CREPE_HOP_LENGTH -->
+    <label for="crepeHopLength">Crepe Hop Length:</label>
+    <input type="number" id="crepeHopLength" name="CREPE_HOP_LENGTH" value="64">
+    <br>
+
+    <!-- PROTECT -->
+    <label for="protect">Protect:</label>
+    <input type="number" id="protect" name="PROTECT" value="0.33">
+    <br>
+
+    <!-- REMIX_MIX_RATE -->
+    <label for="remixMixRate">Remix Mix Rate:</label>
+    <input type="number" id="remixMixRate" name="REMIX_MIX_RATE" value="0.25">
+    <br>
+
+    <!-- Audio Mixing Options -->
+    <h2>Audio Mixing Options</h2>
+    <!-- MAIN_VOL -->
+    <label for="mainVol">Main Volume:</label>
+    <input type="number" id="mainVol" name="MAIN_VOL" value="0">
+    <br>
+
+    <!-- BACKUP_VOL -->
+    <label for="backupVol">Backup Volume:</label>
+    <input type="number" id="backupVol" name="BACKUP_VOL" value="0">
+    <br>
+
+    <!-- INST_VOL -->
+    <label for="instVol">Instrument Volume:</label>
+    <input type="number" id="instVol" name="INST_VOL" value="0">
+    <br>
+
+    <!-- Reverb Control -->
+    <h2>Reverb Control</h2>
+    <!-- REVERB_SIZE -->
+    <label for="reverbSize">Reverb Size:</label>
+    <input type="number" id="reverbSize" name="REVERB_SIZE" value="0.15">
+    <br>
+
+    <!-- REVERB_WETNESS -->
+    <label for="reverbWetness">Reverb Wetness:</label>
+    <input type="number" id="reverbWetness" name="REVERB_WETNESS" value="0.2">
+    <br>
+
+    <!-- REVERB_DRYNESS -->
+    <label for="reverbDryness">Reverb Dryness:</label>
+    <input type="number" id="reverbDryness" name="REVERB_DRYNESS" value="0.8">
+    <br>
+
+    <!-- REVERB_DAMPING -->
+    <label for="reverbDamping">Reverb Damping:</label>
+    <input type="number" id="reverbDamping" name="REVERB_DAMPING" value="0.7">
+    <br>
+
+    <!-- Output Format -->
+    <h2>Output Format</h2>
+    <!-- OUTPUT_FORMAT -->
+    <label for="outputFormat">Output Format:</label>
+    <select id="outputFormat" name="OUTPUT_FORMAT">
+        <option value="mp3">mp3</option>
+        <option value="wav">wav</option>
+    </select>
+    <br>
+
+    <!-- 실행 버튼 -->
+    <button type="button" onclick="executeVoiceConversion()">음성 변환 실행</button>
+</form>
+
+<script>
+    function executeVoiceConversion() {
+        // FormData를 사용하여 form 데이터를 가져옴
+        const formData = new FormData(document.getElementById("voiceConversionForm"));
+
+        // 데이터를 JSON 형식으로 변환
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            jsonData[key] = value;
+        });
+
+        // JSON 데이터(옵션값)를 서버로 전송
+        fetch('/execute_voice_conversion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 서버에서 받은 결과 출력
+            console.log(data.result);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+</body>
+</html>
