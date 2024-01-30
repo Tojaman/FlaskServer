@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, jsonify
-import os
+import os, subprocess
 
 app = Flask(__name__)
 
@@ -47,7 +47,7 @@ def execute_voice_conversion():
     # 설정값을 사용하여 명령어 생성
     command = [
         "python",
-        "src/main_RVC.py",
+        "RVC_custom/src/main.py",
         "-i", data["SONG_INPUT"],
         "-dir", data["RVC_DIRNAME"],
         "-p", str(data["PITCH_CHANGE"]),
@@ -75,6 +75,7 @@ def execute_voice_conversion():
     output = ""
     for line in process.stdout:
         output += line
+        print(line, end='')
 
     return jsonify({"result": output})
 
@@ -83,4 +84,6 @@ if __name__ == '__main__':
     # if not os.path.exists(UPLOAD_FOLDER):
     #     os.makedirs(UPLOAD_FOLDER)
 
-    app.run(debug=True)
+    # app.run(debug=True)
+    # Detected chage in '경로', reloading 문제 해결
+    app.run(debug=False)
