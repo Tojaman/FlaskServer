@@ -85,4 +85,5 @@ if __name__ == '__main__':
     #     os.makedirs(UPLOAD_FOLDER)
 
     # app.run(debug=True)
-    app.run(debug=False) # Detected chage in '경로', reloading 문제 해결
+    # Detected chage in '경로', reloading 문제 해결
+    app.run(debug=False)
