@@ -85,4 +85,4 @@ if __name__ == '__main__':
     #     os.makedirs(UPLOAD_FOLDER)
 
     # app.run(debug=True)
-    app.run(debug=False)
+    app.run(debug=False) # Detected chage in '경로', reloading 문제 해결
