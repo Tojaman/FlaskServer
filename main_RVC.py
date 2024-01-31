@@ -19,26 +19,6 @@ def index():
     # return render_template('index.html')
     return render_template('rvc_option.html')
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    # 업로드된 파일을 처리
-    if 'file' not in request.files:
-        return "파일이 없습니다."
-
-    file = request.files['file']
-
-    if file.filename == '':
-        return "파일을 선택해주세요."
-
-    if file and allowed_file(file.filename):
-        # 파일 저장
-        filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filename)
-        return '파일 업로드 성공!'
-
-    return '허용된 파일 형식이 아닙니다.'
-
-
 @app.route('/execute_voice_conversion', methods=['POST'])
 def execute_voice_conversion():
     # HTML 폼에서 전송된 데이터를 가져옴
@@ -69,7 +49,7 @@ def execute_voice_conversion():
     ]
 
     # 명령어 실행
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    # process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
     # 명령어 실행 결과 반환
     output = ""
