@@ -1,10 +1,7 @@
-from flask import Flask, request, render_template, jsonify
-import os, boto3
-from tasks import process_uploaded_file, celery
-# from celery_config import make_celery
+from flask import Flask, request
+from tasks import process_uploaded_file
 
 app = Flask(__name__)
-# celery.conf.update(app.config)
 
 
 @app.route('/', methods=['GET'])
