@@ -22,7 +22,7 @@ def index():
 @app.route('/execute_voice_conversion', methods=['POST'])
 def execute_voice_conversion():
     # HTML 폼에서 전송된 데이터를 가져옴
-    data = request.json
+    data = request.json #
 
     # 설정값을 사용하여 명령어 생성
     command = [
