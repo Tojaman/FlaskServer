@@ -48,7 +48,7 @@ def process_uploaded_file(json_data):
         if s3_get_object(s3, S3_BUCKET, s3_url, local_file_dir):
             result.append("파일 다운 성공")
         else:
-            result.append("파일 다운VC 실행
+            result.append("파일 다운VC 실행")
         convert_voice_path = execute_voice_conversion(json_data, local_file_dir)
         print(convert_voice_path) # RVC 결과 파일 경로 반환
 
