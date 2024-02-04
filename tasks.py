@@ -44,16 +44,12 @@ def process_uploaded_file(json_data):
     with tempfile.TemporaryDirectory() as temp_dir:
         local_file_dir = os.path.join(temp_dir, 'video.wav')
 
-        print(local_file_dir)
-
         # 다운로드
         if s3_get_object(s3, S3_BUCKET, s3_url, local_file_dir):
             result.append("파일 다운 성공")
         else:
             result.append("파일 다운VC 실행")
         convert_voice_path = execute_voice_conversion(json_data, local_file_dir)
-        print("이거")  # RVC 결과 파일 경로 반환
-        print(convert_voice_path)
 
         # 업로드
         convert_file_path_s3 = "convert_voice/ojtube.wav"
@@ -168,7 +164,6 @@ def execute_voice_conversion(data, local_file_dir):
     # output = ""
     cover_path = ""
     for line in process.stdout:
-        print(line, end='')
         # 정규식을 사용하여 파일 경로 추출
         match = re.search(r'Cover generated at (.+)', line)
         if match:
