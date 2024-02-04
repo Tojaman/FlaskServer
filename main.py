@@ -19,7 +19,7 @@ def upload_file():
     """
     json_data = request.json
 
-    result = process_uploaded_file.delay(json_data['url']).get()
+    result = process_uploaded_file.delay(json_data).get()
 
     return result
 
@@ -27,4 +27,5 @@ if __name__ == '__main__':
     # 업로드 폴더가 없으면 생성
     # if not os.path.exists(UPLOAD_FOLDER):
     #     os.makedirs(UPLOAD_FOLDER)
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run('0.0.0.0', port=5000, debug=True)
