@@ -273,7 +273,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         # AI 보컬 파일 경로
         ai_vocals_path = os.path.join(song_dir, f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}.wav')
         # 최종 AI 커버 파일의 경로
-        ai_cover_path = os.path.join(song_dir, f'{os.path.splitext(os.path.basename(orig_song_path))[0]} ({voice_model} Ver).{output_format}')
+        # ai_cover_path = os.path.join(song_dir, f'{os.path.splitext(os.path.basename(orig_song_path))[0]} ({voice_model} Ver).{output_format}')
 
         # 이미 만들어진 AI 보컬 파일이 없다면
         if not os.path.exists(ai_vocals_path):
@@ -314,7 +314,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 
         display_progress('변환 완료', 0.9, is_webui, progress)
 
-        return ai_cover_path
+        return ai_vocals_path
 
     except Exception as e:
         raise_exception(str(e), is_webui)

@@ -19,6 +19,7 @@ def upload_file():
     """
     json_data = request.json
 
+    # celery 비동기 처리
     result = process_uploaded_file.delay(json_data).get()
 
     return result
