@@ -9,7 +9,7 @@ AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 S3_BUCKET = os.environ.get('S3_BUCKET')
 
-celery = Celery('FlaskAiModelServing', broker='redis://127.0.0.1:63799/0', backend='redis://127.0.0.1:6379/0')
+celery = Celery('FlaskAiModelServing', broker='redis://127.0.0.1:6379/0', backend='redis://127.0.0.1:6379/0')
 
 
 @celery.task
@@ -28,7 +28,7 @@ def process_uploaded_file(json_data):
     body 부분에 아래 형식으로 메시지 전송
     {
         "url": "original_video/ojtube.wav"
-        
+
     }
     """
 
@@ -44,13 +44,16 @@ def process_uploaded_file(json_data):
     with tempfile.TemporaryDirectory() as temp_dir:
         local_file_dir = os.path.join(temp_dir, 'video.wav')
 
+        print(local_file_dir)
+
         # 다운로드
         if s3_get_object(s3, S3_BUCKET, s3_url, local_file_dir):
             result.append("파일 다운 성공")
         else:
             result.append("파일 다운VC 실행")
         convert_voice_path = execute_voice_conversion(json_data, local_file_dir)
-        print(convert_voice_path) # RVC 결과 파일 경로 반환
+        print("이거")  # RVC 결과 파일 경로 반환
+        print(convert_voice_path)
 
         # 업로드
         convert_file_path_s3 = "convert_voice/ojtube.wav"
@@ -69,6 +72,7 @@ def process_uploaded_file(json_data):
             result.append("임시 디렉토리의 파일이 삭제되었습니다.")
 
     return result
+
 
 # S3 연결 및 S3 객체 반환
 @celery.task
@@ -90,6 +94,7 @@ def s3_connection():
         print(e)
         raise
 
+
 @celery.task
 # S3에서 파일 다운로드
 def s3_get_object(s3, bucket, s3_filepath, local_filepath):
@@ -108,6 +113,7 @@ def s3_get_object(s3, bucket, s3_filepath, local_filepath):
     except Exception as e:
         print(e)
         return False
+
 
 # S3에 파일 업로드
 @celery.task
@@ -128,13 +134,14 @@ def s3_put_object(s3, bucket, local_filepath, s3_filepath):
         return False
     return True
 
+
 @celery.task
 def execute_voice_conversion(data, local_file_dir):
     # HTML 폼에서 전송된 데이터를 가져옴
 
     # 설정값을 사용하여 명령어 생성
     command = [
-        "python",
+        "python3",
         "RVC_custom/src/main.py",
         "-i", local_file_dir,
         "-dir", data["RVC_DIRNAME"],
@@ -155,20 +162,21 @@ def execute_voice_conversion(data, local_file_dir):
         "-rdamp", "0.7",
         "-oformat", "wav"
     ]
-
     # 명령어 실행
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-
     # 명령어 실행 결과 반환
     # output = ""
     cover_path = ""
     for line in process.stdout:
+        print(line, end='')
         # 정규식을 사용하여 파일 경로 추출
         match = re.search(r'Cover generated at (.+)', line)
         if match:
             cover_path = match.group(1).strip()
-            print(cover_path) # 파일 경로 출력
+            print(cover_path)  # 파일 경로 출력
         # output += line
         # print(line, end='')
+
+    process.wait()
 
     return cover_path
