@@ -1,5 +1,5 @@
 from celery import Celery
-import os, boto3, tempfile, shutil
+import os, boto3, tempfile, shutil, jsonify, subprocess, re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,16 +9,26 @@ AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 S3_BUCKET = os.environ.get('S3_BUCKET')
 
-celery = Celery('FlaskAiModelServing', broker='redis://127.0.0.1:6379/0', backend='redis://127.0.0.1:6379/0')
+celery = Celery('FlaskAiModelServing', broker='redis://127.0.0.1:63799/0', backend='redis://127.0.0.1:6379/0')
 
 
 @celery.task
-def process_uploaded_file(s3_url):
+def process_uploaded_file(json_data):
+    # S3
     """
     body 부분에 아래 형식으로 메시지 전송
     {
         "action": "translate",
         "url": "S3 경로" # 버킷 경로X -> 폴더/파일 이름.wav("original_video/ojtube.wav")
+    }
+    """
+
+    # RVC
+    """
+    body 부분에 아래 형식으로 메시지 전송
+    {
+        "url": "original_video/ojtube.wav"
+        
     }
     """
 
@@ -28,7 +38,7 @@ def process_uploaded_file(s3_url):
     s3 = s3_connection()
 
     # 음성 파일이 저장된 S3 경로
-    s3_url = s3_url
+    s3_url = json_data['url']
 
     # 임시 디렉토리에 파일 저장
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -38,11 +48,13 @@ def process_uploaded_file(s3_url):
         if s3_get_object(s3, S3_BUCKET, s3_url, local_file_dir):
             result.append("파일 다운 성공")
         else:
-            result.append("파일 다운 실패")
+            result.append("파일 다운VC 실행
+        convert_voice_path = execute_voice_conversion(json_data, local_file_dir)
+        print(convert_voice_path) # RVC 결과 파일 경로 반환
 
         # 업로드
         convert_file_path_s3 = "convert_voice/ojtube.wav"
-        if s3_put_object(s3, S3_BUCKET, local_file_dir, convert_file_path_s3):
+        if s3_put_object(s3, S3_BUCKET, convert_voice_path, convert_file_path_s3):
             result.append("파일 업로드 성공")
         else:
             result.append("파일 업로드 실패")
@@ -58,8 +70,8 @@ def process_uploaded_file(s3_url):
 
     return result
 
-@celery.task
 # S3 연결 및 S3 객체 반환
+@celery.task
 def s3_connection():
     """
     s3 bucket에 연결
@@ -97,8 +109,8 @@ def s3_get_object(s3, bucket, s3_filepath, local_filepath):
         print(e)
         return False
 
-@celery.task
 # S3에 파일 업로드
+@celery.task
 def s3_put_object(s3, bucket, local_filepath, s3_filepath):
     """
     s3 bucket에 지정 파일 업로드
@@ -115,3 +127,48 @@ def s3_put_object(s3, bucket, local_filepath, s3_filepath):
         print(e)
         return False
     return True
+
+@celery.task
+def execute_voice_conversion(data, local_file_dir):
+    # HTML 폼에서 전송된 데이터를 가져옴
+
+    # 설정값을 사용하여 명령어 생성
+    command = [
+        "python",
+        "RVC_custom/src/main.py",
+        "-i", local_file_dir,
+        "-dir", data["RVC_DIRNAME"],
+        "-p", "0",
+        "-pall", "0",
+        "-ir", "0.75",
+        "-fr", "3",
+        "-rms", "0.25",
+        "-palgo", "rmvpe",
+        "-hop", "64",
+        "-pro", "0.33",
+        "-mv", "0",
+        "-bv", "0",
+        "-iv", "0",
+        "-rsize", "0.15",
+        "-rwet", "0.2",
+        "-rdry", "0.8",
+        "-rdamp", "0.7",
+        "-oformat", "wav"
+    ]
+
+    # 명령어 실행
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+
+    # 명령어 실행 결과 반환
+    # output = ""
+    cover_path = ""
+    for line in process.stdout:
+        # 정규식을 사용하여 파일 경로 추출
+        match = re.search(r'Cover generated at (.+)', line)
+        if match:
+            cover_path = match.group(1).strip()
+            print(cover_path) # 파일 경로 출력
+        # output += line
+        # print(line, end='')
+
+    return cover_path
