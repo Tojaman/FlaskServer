@@ -48,11 +48,16 @@ def process_uploaded_file(json_data):
         if s3_get_object(s3, S3_BUCKET, s3_url, local_file_dir):
             result.append("파일 다운 성공")
         else:
-            result.append("파일 다운VC 실행")
+            result.append("파일 다운 실패")
+
+        # RVC 변환
         convert_voice_path = execute_voice_conversion(json_data, local_file_dir)
 
+        # RVC 변환 음성 파일 이름 추출
+        convert_file_name = os.path.basename(convert_voice_path)
+
         # 업로드
-        convert_file_path_s3 = "convert_voice/ojtube.wav"
+        convert_file_path_s3 = "convert_voice/" + convert_file_name # 저장할 S3 경로
         if s3_put_object(s3, S3_BUCKET, convert_voice_path, convert_file_path_s3):
             result.append("파일 업로드 성공")
         else:
@@ -67,7 +72,7 @@ def process_uploaded_file(json_data):
         else:
             result.append("임시 디렉토리의 파일이 삭제되었습니다.")
 
-    return result
+    return convert_file_path_s3
 
 
 # S3 연결 및 S3 객체 반환
@@ -133,8 +138,6 @@ def s3_put_object(s3, bucket, local_filepath, s3_filepath):
 
 @celery.task
 def execute_voice_conversion(data, local_file_dir):
-    # HTML 폼에서 전송된 데이터를 가져옴
-
     # 설정값을 사용하여 명령어 생성
     command = [
         "python3",
@@ -168,7 +171,7 @@ def execute_voice_conversion(data, local_file_dir):
         match = re.search(r'Cover generated at (.+)', line)
         if match:
             cover_path = match.group(1).strip()
-            print(cover_path)  # 파일 경로 출력
+            # print(cover_path)  # 파일 경로 출력
         # output += line
         # print(line, end='')
 
