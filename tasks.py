@@ -1,6 +1,7 @@
 from celery import Celery
 import os, boto3, tempfile, shutil, jsonify, subprocess, re
 from dotenv import load_dotenv
+from moviepy.editor import VideoFileClip
 
 load_dotenv()
 
@@ -42,16 +43,23 @@ def process_uploaded_file(json_data):
 
     # 임시 디렉토리에 파일 저장
     with tempfile.TemporaryDirectory() as temp_dir:
-        local_file_dir = os.path.join(temp_dir, 'video.wav')
+        # 동영상 파일명 추출
+        s3_filename = os.path.basename(s3_url)
+
+        # 동영상을 저장할 경로 설정
+        local_file_path = os.path.join(temp_dir, s3_filename)
 
         # 다운로드
-        if s3_get_object(s3, S3_BUCKET, s3_url, local_file_dir):
+        if s3_get_object(s3, S3_BUCKET, s3_url, local_file_path):
             result.append("파일 다운 성공")
         else:
             result.append("파일 다운 실패")
 
+        # 음성 추출
+        local_audio_path = extract_audio(temp_dir, local_file_path)
+
         # RVC 변환
-        convert_voice_path = execute_voice_conversion(json_data, local_file_dir)
+        convert_voice_path = execute_voice_conversion(json_data, local_audio_path)
 
         # RVC 변환 음성 파일 이름 추출
         convert_file_name = os.path.basename(convert_voice_path)
@@ -67,8 +75,8 @@ def process_uploaded_file(json_data):
         shutil.rmtree(temp_dir)
 
         # 임시 디렉토리 삭제 되었는지 확인
-        if os.path.exists(local_file_dir):
-            result.append(f"임시 디렉토리에 파일이 여전히 존재합니다: {local_file_dir}")
+        if os.path.exists(local_file_path) and os.path.exists(local_audio_path):
+            result.append("임시 디렉토리에 파일이 여전히 존재합니다")
         else:
             result.append("임시 디렉토리의 파일이 삭제되었습니다.")
 
@@ -134,6 +142,29 @@ def s3_put_object(s3, bucket, local_filepath, s3_filepath):
         print(e)
         return False
     return True
+
+# 강의 영상에서 음성 추출
+@celery.task
+def extract_audio(temp_dir, file_path):
+    # 동영상 파일 로드
+    video_clip = VideoFileClip(file_path)
+
+    # 오디오 추출
+    audio_clip = video_clip.audio
+
+    # 파일명 추출
+    file_name = os.path.splitext(os.path.basename(file_path))[0] # splitext : 파일의 확장자를 분리해서 저장하기 위함
+
+    # 오피오 파일 경로 설정
+    output_audio_path = os.path.join(temp_dir, f'{file_name}_audio.wav')
+
+    # 오디오를 WAV 파일로 저장
+    audio_clip.write_audiofile(output_audio_path, codec='pcm_s16le', fps=audio_clip.fps)
+
+    # 메모리에서 오디오 클립 제거
+    audio_clip.close()
+
+    return output_audio_path
 
 
 @celery.task
