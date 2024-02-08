@@ -28,4 +28,4 @@ if __name__ == '__main__':
         print(f'Downloading {model}...')
         dl_model(RVC_DOWNLOAD_LINK, model, rvc_models_dir)
 
-    print('All dao downloaded!')
+    print('All model downloaded!')
