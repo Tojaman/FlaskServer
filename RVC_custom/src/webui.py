@@ -176,7 +176,7 @@ if __name__ == '__main__':
             with gr.Accordion('Main Options'):
                 with gr.Row():
                     with gr.Column():
-                        rvc_model = gr.Dropdown(voice_models, label='Voice Models', info='Models folder "AICoverGen --> rvc_models". After new models are added into this folder, click the refresh button')
+                        rvc_model = gr.Dropdown(voice_models, label='Voice Models', info='Models folder "AICoverGen --> rvc_models". After new dao are added into this folder, click the refresh button')
                         ref_btn = gr.Button('Refresh Models 🔁', variant='primary')
 
                     with gr.Column() as yt_link_col:
@@ -248,7 +248,7 @@ if __name__ == '__main__':
             with gr.Tab('From HuggingFace/Pixeldrain URL'):
                 with gr.Row():
                     model_zip_link = gr.Text(label='Download link to model', info='Should be a zip file containing a .pth model file and an optional .index file.')
-                    model_name = gr.Text(label='Name your model', info='Give your new model a unique name from your other video models.')
+                    model_name = gr.Text(label='Name your model', info='Give your new model a unique name from your other video dao.')
 
                 with gr.Row():
                     download_btn = gr.Button('Download 🌐', variant='primary', scale=19)
@@ -271,8 +271,8 @@ if __name__ == '__main__':
             with gr.Tab('From Public Index'):
 
                 gr.Markdown('## How to use')
-                gr.Markdown('- Click Initialize public models table')
-                gr.Markdown('- Filter models using tags or search bar')
+                gr.Markdown('- Click Initialize public dao table')
+                gr.Markdown('- Filter dao using tags or search bar')
                 gr.Markdown('- Select a row to autofill the download link and model name')
                 gr.Markdown('- Click Download')
 
@@ -284,9 +284,9 @@ if __name__ == '__main__':
                     download_pub_btn = gr.Button('Download 🌐', variant='primary', scale=19)
                     pub_dl_output_message = gr.Text(label='Output Message', interactive=False, scale=20)
 
-                filter_tags = gr.CheckboxGroup(value=[], label='Show video models with tags', choices=[])
+                filter_tags = gr.CheckboxGroup(value=[], label='Show video dao with tags', choices=[])
                 search_query = gr.Text(label='Search')
-                load_public_models_button = gr.Button(value='Initialize public models table', variant='primary')
+                load_public_models_button = gr.Button(value='Initialize public dao table', variant='primary')
 
                 public_models_table = gr.DataFrame(value=[], headers=['Model Name', 'Description', 'Credit', 'URL', 'Tags'], label='Available Public Models', interactive=False)
                 public_models_table.select(pub_dl_autofill, inputs=[public_models_table], outputs=[pub_zip_link, pub_model_name])

@@ -7,6 +7,7 @@ rvc_models/*/*.index
 rvc_models/*/*.npy
 rvc_models/hubert_base.pt
 rvc_models/rmvpe.pt
+original_voice/*
 
 # Output
 song_output/*/*.wav
