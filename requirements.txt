@@ -4,6 +4,10 @@ celery
 boto3
 load_dotenv
 deemix
+jsonify
+mysql
+sqlalchemy
+mysql-connector-python
 fairseq==0.12.2
 faiss-cpu==1.7.3
 ffmpeg-python>=0.2.0
