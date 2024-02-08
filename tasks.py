@@ -3,6 +3,7 @@ import os, boto3, tempfile, shutil, jsonify, subprocess, re
 from dotenv import load_dotenv
 from moviepy.editor import VideoFileClip, AudioFileClip
 
+
 load_dotenv()
 
 AWS_DEFAULT_REGION = os.environ.get('AWS_DEFAULT_REGION')
@@ -53,6 +54,7 @@ def process_uploaded_file(json_data):
         # 다운로드
         if s3_get_object(s3, S3_BUCKET, s3_url, local_video_path):
         # if s3_get_object(s3, S3_BUCKET, s3_url, "./test.mp4"):
+
             result.append("파일 다운 성공")
         else:
             result.append("파일 다운 실패")
@@ -69,6 +71,7 @@ def process_uploaded_file(json_data):
         convert_video_path = merge_video_audio(temp_dir, local_video_path, convert_voice_path)
         # convert_video_path = merge_video_audio("./", file_path, convert_voice_path)
 
+
         # 최종 변환 파일 이름 추출
         convert_voice_name = os.path.basename(convert_video_path)
 
@@ -84,6 +87,7 @@ def process_uploaded_file(json_data):
 
         # 임시 디렉토리 삭제 되었는지 확인
         if os.path.exists(local_video_path) and os.path.exists(local_audio_path):
+
             result.append("임시 디렉토리에 파일이 여전히 존재합니다")
         else:
             result.append("임시 디렉토리의 파일이 삭제되었습니다.")
@@ -200,6 +204,29 @@ def s3_put_object(s3, bucket, local_filepath, s3_filepath):
         print(e)
         return False
     return True
+
+# 강의 영상에서 음성 추출
+@celery.task
+def extract_audio(temp_dir, file_path):
+    # 동영상 파일 로드
+    video_clip = VideoFileClip(file_path)
+
+    # 오디오 추출
+    audio_clip = video_clip.audio
+
+    # 파일명 추출
+    file_name = os.path.splitext(os.path.basename(file_path))[0] # splitext : 파일의 확장자를 분리해서 저장하기 위함
+
+    # 오피오 파일 경로 설정
+    output_audio_path = os.path.join(temp_dir, f'{file_name}_audio.wav')
+
+    # 오디오를 WAV 파일로 저장
+    audio_clip.write_audiofile(output_audio_path, codec='pcm_s16le', fps=audio_clip.fps)
+
+    # 메모리에서 오디오 클립 제거
+    audio_clip.close()
+
+    return output_audio_path
 
 
 @celery.task
